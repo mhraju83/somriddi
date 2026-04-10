@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>সম্মিলিত সমৃদ্ধি | Smart Co-op Pro</title>
+    <title>সম্মিলিত সমৃদ্ধি | ঐক্যবদ্ধ অগ্রযাত্রা</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .gradient-header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
-        .tab-active { background: white !important; color: #1e3a8a !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .gradient-header { background: linear-gradient(135deg, #064e3b 0%, #059669 100%); }
+        .tab-active { background: white !important; color: #064e3b !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        @media print { .no-print { display: none; } }
+        @media print { 
+            .no-print { display: none !important; } 
+            body { background: white; }
+            #receipt-modal { position: static; background: white; display: block !important; box-shadow: none; }
+        }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #059669; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
@@ -25,88 +29,101 @@
                     <img src="https://storage.googleapis.com/static.cdn.respond.io/591024/641041046_877949485299102_1068984859608942574_n-removebg-preview.png" alt="Logo" class="h-12 w-auto">
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black tracking-tight leading-none">সম্মিলিত সমৃদ্ধি</h1>
-                    <p class="text-[10px] opacity-80 font-bold uppercase tracking-widest mt-1">Smart Co-operative Solution</p>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tight leading-none uppercase">সম্মিলিত সমৃদ্ধি</h1>
+                    <p class="text-[10px] opacity-90 font-bold uppercase tracking-widest mt-1">ঐক্যবদ্ধ অগ্রযাত্রা</p>
                 </div>
             </div>
             <div id="nav-actions" class="hidden">
-                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-full text-xs font-bold transition-all shadow-lg">লগআউট</button>
+                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-full text-xs font-bold transition-all shadow-lg uppercase">লগআউট</button>
             </div>
         </div>
     </header>
 
-    <div id="login-screen" class="min-h-[80vh] flex items-center justify-center p-4">
-        <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white">
+    <div id="login-screen" class="min-h-[80vh] flex items-center justify-center p-4 no-print">
+        <div class="glass-card p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-white">
             <div class="flex gap-2 mb-8 bg-slate-100 p-1.5 rounded-2xl font-bold">
-                <button onclick="toggleLoginMode('member')" id="m-btn" class="flex-1 py-3 rounded-xl tab-active transition-all">সদস্য</button>
-                <button onclick="toggleLoginMode('admin')" id="a-btn" class="flex-1 py-3 rounded-xl text-slate-500 transition-all">এডমিন</button>
+                <button onclick="toggleLoginMode('member')" id="m-btn" class="flex-1 py-3 rounded-xl tab-active transition-all uppercase">সদস্য</button>
+                <button onclick="toggleLoginMode('admin')" id="a-btn" class="flex-1 py-3 rounded-xl text-slate-500 transition-all uppercase">এডমিন</button>
             </div>
             <div class="space-y-5">
-                <input type="text" id="user-id" placeholder="আইডি (যেমন: A001)" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 uppercase">
-                <input type="password" id="user-pass" placeholder="পিন নম্বর" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
-                <button onclick="handleAuth()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 shadow-xl active:scale-95 transition-all">লগইন করুন</button>
+                <input type="text" id="user-id" placeholder="আইডি (যেমন: A001)" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-900 bg-slate-50 uppercase font-bold">
+                <input type="password" id="user-pass" placeholder="পিন নম্বর" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-900 bg-slate-50">
+                <button onclick="handleAuth()" class="w-full bg-emerald-900 text-white py-4 rounded-2xl font-black hover:bg-emerald-800 shadow-xl active:scale-95 transition-all uppercase tracking-widest">লগইন</button>
             </div>
         </div>
     </div>
 
-    <div id="admin-panel" class="hidden">
+    <div id="admin-panel" class="hidden no-print">
         <main class="container mx-auto p-4 space-y-6">
             <div id="admin-summary-cards" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-[2rem] shadow-sm border">
-                    <h3 class="font-bold mb-4 text-blue-900 flex items-center gap-2"><i class="fas fa-users"></i> সদস্য তালিকা</h3>
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-emerald-100">
+                    <h3 class="font-bold mb-4 text-emerald-800 flex items-center gap-2 uppercase text-sm tracking-wider"><i class="fas fa-users text-emerald-500"></i> সদস্য তালিকা</h3>
                     <div class="flex gap-2 mb-4">
-                        <input type="text" id="new-id" placeholder="ID (A001)" class="w-24 p-3 border rounded-xl text-sm uppercase">
+                        <input type="text" id="new-id" placeholder="ID" class="w-20 p-3 border rounded-xl text-sm uppercase font-bold">
                         <input type="text" id="new-name" placeholder="নাম" class="flex-1 p-3 border rounded-xl text-sm">
                         <input type="text" id="new-pin" placeholder="পিন" class="w-20 p-3 border rounded-xl text-sm">
-                        <button onclick="addNewMember()" class="bg-green-600 text-white px-4 rounded-xl font-bold text-sm">যোগ</button>
+                        <button onclick="addNewMember()" class="bg-emerald-900 text-white px-4 rounded-xl font-bold text-sm">যোগ</button>
                     </div>
                     <div id="admin-member-list" class="max-h-60 overflow-y-auto space-y-2 pr-2"></div>
                 </div>
-
-                <div class="bg-white p-6 rounded-[2rem] shadow-sm border">
-                    <h3 class="font-bold mb-4 text-blue-900 flex items-center gap-2"><i class="fas fa-plus-circle"></i> নতুন লেনদেন</h3>
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-emerald-100">
+                    <h3 class="font-bold mb-4 text-emerald-800 flex items-center gap-2 uppercase text-sm tracking-wider"><i class="fas fa-hand-holding-usd"></i> নতুন লেনদেন</h3>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="text" id="tx-member-id" placeholder="সদস্য আইডি" class="p-3 border rounded-xl text-sm bg-slate-50 uppercase">
-                            <input type="number" id="tx-amount" placeholder="পরিমাণ" class="p-3 border rounded-xl text-sm bg-slate-50 font-bold">
+                            <input type="text" id="tx-member-id" placeholder="মেম্বার আইডি" class="p-3 border rounded-xl text-sm bg-slate-50 uppercase font-bold">
+                            <input type="number" id="tx-amount" placeholder="পরিমাণ" class="p-3 border rounded-xl text-sm bg-slate-50 font-black">
                         </div>
                         <select id="tx-type" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50">
-                            <option value="Deposit">সদস্য জমা (Income)</option>
-                            <option value="Withdrawal">সদস্য উত্তোলন (Expense)</option>
+                            <option value="Deposit">সঞ্চয় জমা</option>
+                            <option value="Withdrawal">খরচ/উত্তোলন</option>
                         </select>
-                        <input type="text" id="tx-comment" placeholder="মন্তব্য (ঐচ্ছিক)" class="w-full p-3 border rounded-xl text-sm bg-slate-50">
-                        <button onclick="saveTx()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg">ডাটা সেভ করুন</button>
+                        <input type="text" id="tx-comment" placeholder="মন্তব্য" class="w-full p-3 border rounded-xl text-sm bg-slate-50">
+                        <button onclick="saveTx()" class="w-full bg-emerald-900 text-white py-4 rounded-xl font-bold shadow-lg uppercase tracking-widest">সেভ ও রিসিট জেনারেট</button>
                     </div>
                 </div>
             </div>
-
             <div class="bg-white rounded-[2rem] shadow-sm border overflow-hidden">
-                <div class="p-5 bg-slate-800 text-white flex justify-between items-center">
-                    <h3 class="font-bold uppercase tracking-widest text-xs">সাম্প্রতিক লেনদেন ও অ্যাকশন</h3>
-                </div>
-                <div id="admin-tx-history" class="divide-y max-h-96 overflow-y-auto">
-                    </div>
+                <div class="p-5 bg-emerald-900 text-white"><h3 class="font-bold uppercase tracking-widest text-xs text-center">লেনদেন ও সমৃদ্ধি লগ</h3></div>
+                <div id="admin-tx-history" class="divide-y max-h-96 overflow-y-auto"></div>
             </div>
         </main>
     </div>
 
-    <div id="member-panel" class="hidden">
+    <div id="member-panel" class="hidden no-print">
         <main class="container mx-auto p-4 space-y-6">
-            <h2 id="m-welcome" class="text-xl font-black text-blue-900 px-2"></h2>
+            <h2 id="m-welcome" class="text-xl font-black text-emerald-900 px-2 uppercase"></h2>
             <div id="member-summary-cards" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
             <div class="bg-white rounded-[2rem] shadow-sm border overflow-hidden">
-                <div class="p-5 border-b font-bold text-blue-900 bg-blue-50/50">আপনার লেনদেন ইতিহাস</div>
+                <div class="p-5 border-b font-bold text-emerald-800 bg-slate-50 uppercase tracking-widest text-xs text-center">ব্যক্তিগত সমৃদ্ধি ডায়েরি</div>
                 <div id="member-tx-history" class="divide-y"></div>
             </div>
         </main>
     </div>
 
+    <div id="receipt-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center p-4" style="z-index: 9999;">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full border-t-8 border-emerald-900 relative">
+            <div class="text-center mb-6">
+                <div class="bg-emerald-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-check-circle text-3xl text-emerald-600"></i>
+                </div>
+                <h2 class="font-black text-2xl uppercase tracking-tighter">Money Receipt</h2>
+                <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-60">সম্মিলিত সমৃদ্ধি</p>
+            </div>
+            <div id="receipt-details" class="space-y-4 text-sm font-medium text-slate-700"></div>
+            <div class="mt-8 pt-4 border-t border-dashed border-slate-200 text-center">
+                <p class="text-[10px] italic text-slate-400">ধন্যবাদ সম্মিলিত সমৃদ্ধির সাথে থাকার জন্য।</p>
+            </div>
+            <div class="mt-8 flex gap-3 no-print">
+                <button onclick="window.print()" class="flex-1 bg-emerald-900 text-white py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg active:scale-95 transition-all">Print / PDF</button>
+                <button onclick="document.getElementById('receipt-modal').classList.add('hidden')" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold uppercase text-xs tracking-widest active:scale-95 transition-all">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // কনফিগারেশন
-        const SB_URL = 'https://rjlopdcbqsqzhjkiqmwv.supabase.co'; 
-        const SB_KEY = 'sb_publishable_-x7FlSzq-pVXLboEzZv80Q_60pq25WS'; 
+        const SB_URL = 'https://xzihhhoricfjrskpzide.supabase.co'; 
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aWhoaG9yaWNmanJza3B6aWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTUyNjQsImV4cCI6MjA5MTIzMTI2NH0.UgwifF6l0Mi4bMnZz6D6iKf1W1eJfToX3S8MlWaJhfsY'; 
         const _db = supabase.createClient(SB_URL, SB_KEY);
 
         let currentMode = 'member';
@@ -114,21 +131,30 @@
 
         function toggleLoginMode(mode) {
             currentMode = mode;
-            document.getElementById('m-btn').className = mode === 'member' ? 'flex-1 py-3 rounded-xl tab-active transition-all' : 'flex-1 py-3 rounded-xl text-slate-500';
-            document.getElementById('a-btn').className = mode === 'admin' ? 'flex-1 py-3 rounded-xl tab-active transition-all' : 'flex-1 py-3 rounded-xl text-slate-500';
+            document.getElementById('m-btn').className = (mode === 'member') ? 'flex-1 py-3 rounded-xl tab-active transition-all uppercase' : 'flex-1 py-3 rounded-xl text-slate-500 uppercase';
+            document.getElementById('a-btn').className = (mode === 'admin') ? 'flex-1 py-3 rounded-xl tab-active transition-all uppercase' : 'flex-1 py-3 rounded-xl text-slate-500 uppercase';
         }
 
         async function handleAuth() {
-            const id = document.getElementById('user-id').value.toUpperCase();
-            const pass = document.getElementById('user-pass').value;
+            const id = document.getElementById('user-id').value.trim().toUpperCase();
+            const pass = document.getElementById('user-pass').value.trim();
 
             if(currentMode === 'admin') {
-                if(pass === '1234') { showPanel('admin'); refreshAdminDashboard(); } 
-                else alert("ভুল এডমিন পিন!");
+                if(pass === '1234') { 
+                    showPanel('admin'); 
+                    refreshAdminDashboard(); 
+                } else {
+                    alert("ভুল এডমিন পিন!");
+                }
             } else {
-                const { data } = await _db.from('profiles').select('*').eq('id', id).eq('pin', pass).single();
-                if(data) { loggedUser = data; showPanel('member'); loadMemberDashboard(); } 
-                else alert("ভুল আইডি বা পিন!");
+                const { data, error } = await _db.from('profiles').select('*').eq('id', id).eq('pin', pass).single();
+                if(data) { 
+                    loggedUser = data; 
+                    showPanel('member'); 
+                    loadMemberDashboard(); 
+                } else {
+                    alert("আইডি বা পিন ভুল!");
+                }
             }
         }
 
@@ -140,9 +166,12 @@
         }
 
         async function getStats() {
-            const { data: txs } = await _db.from('transactions').select('amount, type');
+            const { data } = await _db.from('transactions').select('amount, type');
             let inc = 0, exp = 0;
-            txs?.forEach(t => { (t.type === 'Deposit') ? inc += t.amount : exp += t.amount; });
+            data?.forEach(t => { 
+                if (t.type === 'Deposit') inc += Number(t.amount); 
+                else exp += Number(t.amount); 
+            });
             return { inc, exp, net: inc - exp };
         }
 
@@ -152,79 +181,98 @@
             const { data: txs } = await _db.from('transactions').select('*').order('created_at', {ascending: false});
             
             document.getElementById('admin-summary-cards').innerHTML = renderCards(stats.inc, stats.exp, stats.net);
-
             document.getElementById('admin-member-list').innerHTML = members.map(m => `
-                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border group">
+                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-emerald-50 group">
                     <div class="text-sm">
-                        <span class="font-bold text-blue-900">${m.id}</span> | <span>${m.full_name}</span>
-                        <p class="text-[10px] text-blue-600 font-black mt-0.5">৳${m.balance}</p>
+                        <span class="font-bold text-slate-900">${m.id}</span> | <span>${m.full_name}</span>
+                        <p class="text-[10px] text-emerald-800 font-black mt-0.5 tracking-wider">৳${Number(m.balance).toLocaleString()}</p>
                     </div>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onclick="editMember('${m.id}', '${m.full_name}', '${m.pin}')" class="text-blue-500 hover:text-blue-700 p-1"><i class="fas fa-edit text-xs"></i></button>
-                        <button onclick="deleteMember('${m.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-trash text-xs"></i></button>
+                    <div class="flex gap-2">
+                        <button onclick="editMember('${m.id}', '${m.full_name}', '${m.pin}')" class="text-emerald-500 p-1"><i class="fas fa-pen-nib"></i></button>
+                        <button onclick="deleteMember('${m.id}')" class="text-red-400 p-1"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`).join('');
 
             document.getElementById('admin-tx-history').innerHTML = txs.map(t => `
-                <div class="flex justify-between items-center p-4 hover:bg-slate-50">
+                <div class="flex justify-between items-center p-4 hover:bg-emerald-50">
                     <div>
-                        <p class="font-bold text-sm text-slate-700">${t.member_id} - ${t.type === 'Deposit' ? 'জমা' : 'উত্তোলন'}</p>
-                        <p class="text-[10px] text-slate-400">${new Date(t.created_at).toLocaleDateString('bn-BD')} | ${t.comment || 'কোনো মন্তব্য নেই'}</p>
+                        <p class="font-bold text-sm text-slate-700">${t.member_id} • ${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'}</p>
+                        <p class="text-[10px] text-slate-400">${new Date(t.created_at).toLocaleString('bn-BD')} | ${t.comment || '-'}</p>
                     </div>
                     <div class="flex items-center gap-4">
-                        <span class="font-bold ${t.type === 'Deposit' ? 'text-green-600' : 'text-red-600'}">৳${t.amount}</span>
-                        <button onclick="deleteTx('${t.id}', '${t.member_id}', ${t.amount}, '${t.type}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                        <span class="font-black ${t.type === 'Deposit' ? 'text-emerald-600' : 'text-red-600'}">৳${Number(t.amount).toLocaleString()}</span>
+                        <button onclick="deleteTx('${t.id}', '${t.member_id}', ${t.amount}, '${t.type}')" class="text-red-400"><i class="fas fa-times-circle"></i></button>
                     </div>
                 </div>`).join('');
         }
 
-        // সদস্য এডিট ফাংশন
-        async function editMember(id, oldName, oldPin) {
-            const newName = prompt("সদস্যের নতুন নাম:", oldName);
-            const newPin = prompt("সদস্যের নতুন পিন:", oldPin);
-            if (newName && newPin) {
-                const { error } = await _db.from('profiles').update({ full_name: newName, pin: newPin }).eq('id', id);
-                if (!error) { alert("তথ্য আপডেট হয়েছে!"); refreshAdminDashboard(); }
-            }
-        }
-
-        // সদস্য ডিলিট ফাংশন
-        async function deleteMember(id) {
-            if (confirm(`আপনি কি নিশ্চিতভাবে আইডি ${id} ডিলিট করতে চান? সদস্যের সব ডাটা মুছে যাবে।`)) {
-                const { error } = await _db.from('profiles').delete().eq('id', id);
-                if (!error) { 
-                    await _db.from('transactions').delete().eq('member_id', id); // মেম্বারের সব লেনদেনও মুছে যাবে
-                    alert("সদস্য সফলভাবে মুছে ফেলা হয়েছে।"); 
-                    refreshAdminDashboard(); 
-                }
-            }
+        function showReceipt(mId, amt, type, comment) {
+            const details = `
+                <div class="flex justify-between border-b border-slate-100 py-2">
+                    <span class="opacity-60 text-xs">সদস্য আইডি:</span> <span class="font-bold">${mId}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-100 py-2">
+                    <span class="opacity-60 text-xs">টাকার পরিমাণ:</span> <span class="font-black text-emerald-900 text-lg">৳${amt.toLocaleString()}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-100 py-2">
+                    <span class="opacity-60 text-xs">ধরণ:</span> <span class="font-bold">${type === 'Deposit' ? 'সঞ্চয় জমা' : 'খরচ / সমৃদ্ধি'}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-100 py-2">
+                    <span class="opacity-60 text-xs">মন্তব্য:</span> <span class="font-bold">${comment || 'N/A'}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span class="opacity-60 text-xs">সময়:</span> <span class="font-bold">${new Date().toLocaleString('bn-BD')}</span>
+                </div>
+            `;
+            document.getElementById('receipt-details').innerHTML = details;
+            document.getElementById('receipt-modal').classList.remove('hidden');
         }
 
         async function saveTx() {
-            const mId = document.getElementById('tx-member-id').value.toUpperCase();
+            const mId = document.getElementById('tx-member-id').value.trim().toUpperCase();
             const amt = parseFloat(document.getElementById('tx-amount').value);
             const type = document.getElementById('tx-type').value;
             const comment = document.getElementById('tx-comment').value;
 
-            if(!mId || !amt) return alert("তথ্য অসম্পূর্ণ!");
+            if(!mId || isNaN(amt)) return alert("সঠিক আইডি এবং পরিমাণ দিন!");
 
             const { error } = await _db.from('transactions').insert([{ member_id: mId, amount: amt, type, comment }]);
             if(!error) {
                 const { data: p } = await _db.from('profiles').select('balance').eq('id', mId).single();
-                let newBal = (type === 'Deposit') ? (p.balance + amt) : (p.balance - amt);
+                let newBal = (type === 'Deposit') ? (Number(p.balance) + amt) : (Number(p.balance) - amt);
                 await _db.from('profiles').update({ balance: newBal }).eq('id', mId);
-                alert("লেনদেন সফল!");
                 refreshAdminDashboard();
-            } else alert("আইডিটি সঠিক নয়!");
+                showReceipt(mId, amt, type, comment);
+                document.getElementById('tx-member-id').value = '';
+                document.getElementById('tx-amount').value = '';
+                document.getElementById('tx-comment').value = '';
+            } else alert("সদস্য খুঁজে পাওয়া যায়নি!");
+        }
+
+        async function editMember(id, n, p) {
+            const newN = prompt("নতুন নাম:", n); 
+            const newP = prompt("নতুন পিন:", p);
+            if (newN && newP) { 
+                await _db.from('profiles').update({ full_name: newN, pin: newP }).eq('id', id); 
+                refreshAdminDashboard(); 
+            }
+        }
+
+        async function deleteMember(id) {
+            if (confirm(`আইডি ${id} ডিলিট করলে সব ইতিহাস মুছে যাবে। নিশ্চিত?`)) {
+                await _db.from('profiles').delete().eq('id', id);
+                await _db.from('transactions').delete().eq('member_id', id);
+                refreshAdminDashboard();
+            }
         }
 
         async function deleteTx(txId, mId, amt, type) {
-            if(confirm("লেনদেনটি ডিলিট করতে চান? সদস্যের ব্যালেন্স অটো আপডেট হবে।")) {
-                const { error: delErr } = await _db.from('transactions').delete().eq('id', txId);
-                if(!delErr) {
+            if(confirm("লেনদেনটি বাতিল করতে চান?")) {
+                const { error } = await _db.from('transactions').delete().eq('id', txId);
+                if(!error) {
                     const { data: p } = await _db.from('profiles').select('balance').eq('id', mId).single();
-                    if (p) {
-                        let adjBal = (type === 'Deposit') ? (p.balance - amt) : (p.balance + amt);
+                    if(p) {
+                        let adjBal = (type === 'Deposit') ? (Number(p.balance) - amt) : (Number(p.balance) + amt);
                         await _db.from('profiles').update({ balance: adjBal }).eq('id', mId);
                     }
                     refreshAdminDashboard();
@@ -233,48 +281,43 @@
         }
 
         async function addNewMember() {
-            const id = document.getElementById('new-id').value.toUpperCase();
-            const name = document.getElementById('new-name').value;
-            const pin = document.getElementById('new-pin').value;
-            if(id.length !== 4) return alert("আইডি ৪ ডিজিট দিন!");
+            const id = document.getElementById('new-id').value.trim().toUpperCase();
+            const name = document.getElementById('new-name').value.trim();
+            const pin = document.getElementById('new-pin').value.trim();
+            if(!id || !name || !pin) return alert("সব ঘর পূরণ করুন!");
             const { error } = await _db.from('profiles').insert([{ id, full_name: name, pin, balance: 0 }]);
-            if(!error) { 
-                document.getElementById('new-id').value = '';
-                document.getElementById('new-name').value = '';
-                document.getElementById('new-pin').value = '';
-                refreshAdminDashboard(); 
-            }
+            if(!error) refreshAdminDashboard();
             else alert("আইডিটি ইতিমধ্যে ব্যবহৃত!");
         }
 
         async function loadMemberDashboard() {
             const stats = await getStats();
-            document.getElementById('m-welcome').innerText = `স্বাগতম, ${loggedUser.full_name} (${loggedUser.id})`;
+            document.getElementById('m-welcome').innerText = `মহারাজ, ${loggedUser.full_name} (${loggedUser.id})`;
             document.getElementById('member-summary-cards').innerHTML = renderCards(stats.inc, stats.exp, stats.net);
-            const { data: txs } = await _db.from('transactions').select('*').eq('member_id', loggedUser.id).order('created_at', {ascending: false});
-            document.getElementById('member-tx-history').innerHTML = txs.map(t => `
-                <div class="p-4 flex justify-between">
+            const { data } = await _db.from('transactions').select('*').eq('member_id', loggedUser.id).order('created_at', {ascending: false});
+            document.getElementById('member-tx-history').innerHTML = data.map(t => `
+                <div class="p-4 flex justify-between items-center">
                     <div>
-                        <p class="font-bold text-sm">${t.type === 'Deposit' ? '✅ অর্থ জমা' : '❌ অর্থ উত্তোলন'}</p>
+                        <p class="font-bold text-sm text-slate-700">${t.type === 'Deposit' ? '💎 সঞ্চয়' : '🔥 খরচ'}</p>
                         <p class="text-[10px] text-slate-400 italic">${t.comment || '-'}</p>
                     </div>
-                    <span class="font-bold text-lg ${t.type === 'Deposit' ? 'text-green-600' : 'text-red-600'}">৳${t.amount}</span>
+                    <span class="font-black text-lg ${t.type === 'Deposit' ? 'text-emerald-600' : 'text-red-600'}">৳${Number(t.amount).toLocaleString()}</span>
                 </div>`).join('');
         }
 
         function renderCards(inc, exp, net) {
             return `
-                <div class="bg-white p-6 rounded-2xl border-b-4 border-green-500 shadow-sm">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">মোট আয়</p>
-                    <h2 class="text-2xl font-black">৳${inc}</h2>
+                <div class="bg-white p-6 rounded-2xl border-b-4 border-emerald-500 shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">মোট সঞ্চয়</p>
+                    <h2 class="text-2xl font-black">৳${inc.toLocaleString()}</h2>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border-b-4 border-red-500 shadow-sm">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">মোট ব্যয়</p>
-                    <h2 class="text-2xl font-black">৳${exp}</h2>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">মোট খরচ</p>
+                    <h2 class="text-2xl font-black">৳${exp.toLocaleString()}</h2>
                 </div>
-                <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-lg">
-                    <p class="text-[10px] font-bold opacity-70 uppercase">বর্তমান ফান্ড</p>
-                    <h2 class="text-2xl font-black">৳${net}</h2>
+                <div class="bg-emerald-900 text-white p-6 rounded-2xl shadow-xl border-b-4 border-emerald-400">
+                    <p class="text-[10px] font-bold opacity-70 uppercase tracking-widest">সমৃদ্ধি ফান্ড</p>
+                    <h2 class="text-2xl font-black">৳${net.toLocaleString()}</h2>
                 </div>`;
         }
     </script>
