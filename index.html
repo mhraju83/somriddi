@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>সম্মিলিত সমৃদ্ধি | ঐক্যবদ্ধ অগ্রযাত্রা</title>
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         .gradient-header { background: linear-gradient(135deg, #064e3b 0%, #059669 100%); }
         .tab-active { background: white !important; color: #064e3b !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
@@ -176,34 +180,43 @@
         }
 
         async function refreshAdminDashboard() {
-            const stats = await getStats();
-            const { data: members } = await _db.from('profiles').select('*').order('id', {ascending: true});
-            const { data: txs } = await _db.from('transactions').select('*').order('created_at', {ascending: false});
-            
-            document.getElementById('admin-summary-cards').innerHTML = renderCards(stats.inc, stats.exp, stats.net);
-            document.getElementById('admin-member-list').innerHTML = members.map(m => `
-                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-emerald-50 group">
-                    <div class="text-sm">
-                        <span class="font-bold text-slate-900">${m.id}</span> | <span>${m.full_name}</span>
-                        <p class="text-[10px] text-emerald-800 font-black mt-0.5 tracking-wider">৳${Number(m.balance).toLocaleString()}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="editMember('${m.id}', '${m.full_name}', '${m.pin}')" class="text-emerald-500 p-1"><i class="fas fa-pen-nib"></i></button>
-                        <button onclick="deleteMember('${m.id}')" class="text-red-400 p-1"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>`).join('');
+            try {
+                const stats = await getStats();
+                const { data: members } = await _db.from('profiles').select('*').order('id', {ascending: true});
+                const { data: txs } = await _db.from('transactions').select('*').order('created_at', {ascending: false});
+                
+                document.getElementById('admin-summary-cards').innerHTML = renderCards(stats.inc, stats.exp, stats.net);
+                
+                if(members) {
+                    document.getElementById('admin-member-list').innerHTML = members.map(m => `
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-emerald-50 group">
+                        <div class="text-sm">
+                            <span class="font-bold text-slate-900">${m.id}</span> | <span>${m.full_name}</span>
+                            <p class="text-[10px] text-emerald-800 font-black mt-0.5 tracking-wider">৳${Number(m.balance).toLocaleString()}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editMember('${m.id}', '${m.full_name}', '${m.pin}')" class="text-emerald-500 p-1"><i class="fas fa-pen-nib"></i></button>
+                            <button onclick="deleteMember('${m.id}')" class="text-red-400 p-1"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`).join('');
+                }
 
-            document.getElementById('admin-tx-history').innerHTML = txs.map(t => `
-                <div class="flex justify-between items-center p-4 hover:bg-emerald-50">
-                    <div>
-                        <p class="font-bold text-sm text-slate-700">${t.member_id} • ${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'}</p>
-                        <p class="text-[10px] text-slate-400">${new Date(t.created_at).toLocaleString('bn-BD')} | ${t.comment || '-'}</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="font-black ${t.type === 'Deposit' ? 'text-emerald-600' : 'text-red-600'}">৳${Number(t.amount).toLocaleString()}</span>
-                        <button onclick="deleteTx('${t.id}', '${t.member_id}', ${t.amount}, '${t.type}')" class="text-red-400"><i class="fas fa-times-circle"></i></button>
-                    </div>
-                </div>`).join('');
+                if(txs) {
+                    document.getElementById('admin-tx-history').innerHTML = txs.map(t => `
+                    <div class="flex justify-between items-center p-4 hover:bg-emerald-50">
+                        <div>
+                            <p class="font-bold text-sm text-slate-700">${t.member_id} • ${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'}</p>
+                            <p class="text-[10px] text-slate-400">${new Date(t.created_at).toLocaleString('bn-BD')} | ${t.comment || '-'}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-black ${t.type === 'Deposit' ? 'text-emerald-600' : 'text-red-600'}">৳${Number(t.amount).toLocaleString()}</span>
+                            <button onclick="deleteTx('${t.id}', '${t.member_id}', ${t.amount}, '${t.type}')" class="text-red-400"><i class="fas fa-times-circle"></i></button>
+                        </div>
+                    </div>`).join('');
+                }
+            } catch (err) {
+                console.error("Dashboard Load Error:", err);
+            }
         }
 
         function showReceipt(mId, amt, type, comment) {
@@ -246,7 +259,10 @@
                 document.getElementById('tx-member-id').value = '';
                 document.getElementById('tx-amount').value = '';
                 document.getElementById('tx-comment').value = '';
-            } else alert("সদস্য খুঁজে পাওয়া যায়নি!");
+            } else {
+                console.error(error);
+                alert("লেনদেন সেভ করা সম্ভব হয়নি। আইডি চেক করুন।");
+            }
         }
 
         async function editMember(id, n, p) {
@@ -285,17 +301,26 @@
             const name = document.getElementById('new-name').value.trim();
             const pin = document.getElementById('new-pin').value.trim();
             if(!id || !name || !pin) return alert("সব ঘর পূরণ করুন!");
+            
             const { error } = await _db.from('profiles').insert([{ id, full_name: name, pin, balance: 0 }]);
-            if(!error) refreshAdminDashboard();
-            else alert("আইডিটি ইতিমধ্যে ব্যবহৃত!");
+            if(!error) {
+                refreshAdminDashboard();
+                document.getElementById('new-id').value = '';
+                document.getElementById('new-name').value = '';
+                document.getElementById('new-pin').value = '';
+            } else {
+                console.error(error);
+                alert("আইডিটি ইতিমধ্যে ব্যবহৃত অথবা কানেকশন ব্লক করা!");
+            }
         }
 
         async function loadMemberDashboard() {
             const stats = await getStats();
-            document.getElementById('m-welcome').innerText = `মহারাজ, ${loggedUser.full_name} (${loggedUser.id})`;
+            document.getElementById('m-welcome').innerText = `সম্মিলিত সদস্য, ${loggedUser.full_name} (${loggedUser.id})`;
             document.getElementById('member-summary-cards').innerHTML = renderCards(stats.inc, stats.exp, stats.net);
             const { data } = await _db.from('transactions').select('*').eq('member_id', loggedUser.id).order('created_at', {ascending: false});
-            document.getElementById('member-tx-history').innerHTML = data.map(t => `
+            if(data) {
+                document.getElementById('member-tx-history').innerHTML = data.map(t => `
                 <div class="p-4 flex justify-between items-center">
                     <div>
                         <p class="font-bold text-sm text-slate-700">${t.type === 'Deposit' ? '💎 সঞ্চয়' : '🔥 খরচ'}</p>
@@ -303,6 +328,7 @@
                     </div>
                     <span class="font-black text-lg ${t.type === 'Deposit' ? 'text-emerald-600' : 'text-red-600'}">৳${Number(t.amount).toLocaleString()}</span>
                 </div>`).join('');
+            }
         }
 
         function renderCards(inc, exp, net) {
