@@ -71,7 +71,7 @@
                             <input type="number" id="tx-amount" placeholder="পরিমাণ" class="p-3 border rounded-xl bg-slate-50 font-black">
                         </div>
                         <select id="tx-type" class="w-full p-3 border rounded-xl bg-slate-50 font-bold">
-                            <option value="Deposit">সঞ্চয় জমা</option>
+                            <option value="Deposit">সঞ্চয় জমা</option>
                             <option value="Withdrawal">খরচ/উত্তোলন</option>
                         </select>
                         <input type="text" id="tx-comment" placeholder="মন্তব্য" class="w-full p-3 border rounded-xl bg-slate-50">
@@ -108,7 +108,6 @@
     </div>
 
     <script>
-        // আপনার নতুন এপিআই কী এখানে বসান
         const SB_URL = 'https://rjlopdcbqsqzhjkiqmwv.supabase.co'; 
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqbG9wZGNicXNxemhqa2lxbXd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTk0MzEsImV4cCI6MjA5MDg5NTQzMX0.7K8sQc8SFiGDMYdAdcF6zen9pEfWq3DgixdQ9elFN18'; 
         const _db = supabase.createClient(SB_URL, SB_KEY);
@@ -145,7 +144,6 @@
             const { data: txData } = await _db.from('transactions').select('amount, type');
             let inc = 0, exp = 0;
             txData?.forEach(t => { if(t.type === 'Deposit') inc += Number(t.amount); else exp += Number(t.amount); });
-            
             document.getElementById('admin-summary-cards').innerHTML = renderCards(inc, exp);
             
             const { data: mems } = await _db.from('profiles').select('*').order('id');
@@ -170,40 +168,29 @@
             const comment = document.getElementById('tx-comment').value;
 
             if(!mId || isNaN(amt)) return alert("সঠিক ডাটা দিন!");
-
             const { error } = await _db.from('transactions').insert([{ member_id: mId, amount: amt, type, comment }]);
-            
             if(!error) {
-                // ব্যালেন্স আপডেট করা
                 const { data: p } = await _db.from('profiles').select('balance').eq('id', mId).single();
                 let newBal = (type === 'Deposit') ? (Number(p.balance) + amt) : (Number(p.balance) - amt);
                 await _db.from('profiles').update({ balance: newBal }).eq('id', mId);
-                
-                // রিসিট জেনারেট এবং দেখানো
                 showReceipt(mId, amt, type, comment);
-                
                 refreshAdminDashboard();
-                
-                // ইনপুট বক্স খালি করা
                 document.getElementById('tx-member-id').value = '';
                 document.getElementById('tx-amount').value = '';
                 document.getElementById('tx-comment').value = '';
-            } else {
-                alert("আইডি খুঁজে পাওয়া যায়নি বা লেনদেন ব্যর্থ হয়েছে!");
-            }
+            } else alert("লেনদেন ব্যর্থ হয়েছে!");
         }
 
         function showReceipt(mId, amt, type, comment) {
             const details = `
                 <div class="flex justify-between py-2"><span>সদস্য আইডি:</span> <b>${mId}</b></div>
                 <div class="flex justify-between py-2"><span>পরিমাণ:</span> <b class="text-lg">৳${amt.toLocaleString()}</b></div>
-                <div class="flex justify-between py-2"><span>ধরণ:</span> <b>${type === 'Deposit' ? 'সঞ্চয় জমা' : 'উত্তোলন/খরচ'}</b></div>
+                <div class="flex justify-between py-2"><span>ধরণ:</span> <b>${type === 'Deposit' ? 'সঞ্চয় জমা' : 'উত্তোলন/খরচ'}</b></div>
                 <div class="flex justify-between py-2"><span>মন্তব্য:</span> <b>${comment || 'N/A'}</b></div>
-                <div class="flex justify-between py-2 text-[10px] opacity-50"><span>সময়:</span> ${new Date().toLocaleString('bn-BD')}</div>
+                <div class="flex justify-between py-2 text-[10px] opacity-50"><span>সময়:</span> ${new Date().toLocaleString('bn-BD')}</div>
             `;
             document.getElementById('receipt-details').innerHTML = details;
             document.getElementById('receipt-modal').classList.remove('hidden');
-        }
         }
 
         async function addNewMember() {
@@ -223,7 +210,7 @@
             document.getElementById('member-summary-cards').innerHTML = renderCards(inc, exp);
             document.getElementById('member-tx-history').innerHTML = txs?.map(t => `
                 <div class="p-4 flex justify-between">
-                    <span>${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'} (${t.comment || '-'})</span>
+                    <span>${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'} (${t.comment || '-'})</span>
                     <span class="font-bold">৳${Number(t.amount).toLocaleString()}</span>
                 </div>`).join('') || '';
         }
@@ -231,7 +218,7 @@
         function renderCards(inc, exp) {
             return `
                 <div class="bg-white p-6 rounded-2xl border-b-4 border-emerald-500 shadow-sm">
-                    <p class="text-[10px] font-bold opacity-50 uppercase">সঞ্চয়</p>
+                    <p class="text-[10px] font-bold opacity-50 uppercase">সঞ্চয়</p>
                     <h2 class="text-2xl font-black">৳${inc.toLocaleString()}</h2>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border-b-4 border-red-500 shadow-sm">
