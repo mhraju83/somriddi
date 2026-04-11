@@ -71,7 +71,7 @@
                             <input type="number" id="tx-amount" placeholder="পরিমাণ" class="p-3 border rounded-xl bg-slate-50 font-black">
                         </div>
                         <select id="tx-type" class="w-full p-3 border rounded-xl bg-slate-50 font-bold">
-                            <option value="Deposit">সঞ্চয় জমা</option>
+                            <option value="Deposit">সঞ্চয় জমা</option>
                             <option value="Withdrawal">খরচ/উত্তোলন</option>
                         </select>
                         <input type="text" id="tx-comment" placeholder="মন্তব্য" class="w-full p-3 border rounded-xl bg-slate-50">
@@ -168,26 +168,37 @@
             const comment = document.getElementById('tx-comment').value;
 
             if(!mId || isNaN(amt)) return alert("সঠিক ডাটা দিন!");
+
+            // সদস্যের নাম সংগ্রহ করা
+            const { data: memberProfile } = await _db.from('profiles').select('full_name').eq('id', mId).single();
+            const memberName = memberProfile ? memberProfile.full_name : "অজানা সদস্য";
+
             const { error } = await _db.from('transactions').insert([{ member_id: mId, amount: amt, type, comment }]);
+            
             if(!error) {
                 const { data: p } = await _db.from('profiles').select('balance').eq('id', mId).single();
                 let newBal = (type === 'Deposit') ? (Number(p.balance) + amt) : (Number(p.balance) - amt);
                 await _db.from('profiles').update({ balance: newBal }).eq('id', mId);
-                showReceipt(mId, amt, type, comment);
+                
+                showReceipt(mId, memberName, amt, type, comment);
                 refreshAdminDashboard();
+                
                 document.getElementById('tx-member-id').value = '';
                 document.getElementById('tx-amount').value = '';
                 document.getElementById('tx-comment').value = '';
-            } else alert("লেনদেন ব্যর্থ হয়েছে!");
+            } else {
+                alert("আইডি পাওয়া যায়নি বা লেনদেন ব্যর্থ!");
+            }
         }
 
-        function showReceipt(mId, amt, type, comment) {
+        function showReceipt(mId, memberName, amt, type, comment) {
             const details = `
-                <div class="flex justify-between py-2"><span>সদস্য আইডি:</span> <b>${mId}</b></div>
-                <div class="flex justify-between py-2"><span>পরিমাণ:</span> <b class="text-lg">৳${amt.toLocaleString()}</b></div>
-                <div class="flex justify-between py-2"><span>ধরণ:</span> <b>${type === 'Deposit' ? 'সঞ্চয় জমা' : 'উত্তোলন/খরচ'}</b></div>
+                <div class="flex justify-between py-2 border-b border-dashed"><span>নাম:</span> <b>${memberName}</b></div>
+                <div class="flex justify-between py-2"><span>আইডি:</span> <b>${mId}</b></div>
+                <div class="flex justify-between py-2"><span>পরিমাণ:</span> <b class="text-lg text-emerald-800">৳${amt.toLocaleString()}</b></div>
+                <div class="flex justify-between py-2"><span>ধরণ:</span> <b>${type === 'Deposit' ? 'সঞ্চয় জমা' : 'উত্তোলন/খরচ'}</b></div>
                 <div class="flex justify-between py-2"><span>মন্তব্য:</span> <b>${comment || 'N/A'}</b></div>
-                <div class="flex justify-between py-2 text-[10px] opacity-50"><span>সময়:</span> ${new Date().toLocaleString('bn-BD')}</div>
+                <div class="flex justify-between py-2 text-[10px] opacity-50"><span>সময়:</span> ${new Date().toLocaleString('bn-BD')}</div>
             `;
             document.getElementById('receipt-details').innerHTML = details;
             document.getElementById('receipt-modal').classList.remove('hidden');
@@ -199,7 +210,7 @@
             const pin = document.getElementById('new-pin').value.trim();
             if(!id || !name || !pin) return alert("সব ঘর পূরণ করুন!");
             const { error } = await _db.from('profiles').insert([{ id, full_name: name, pin, balance: 0 }]);
-            if(!error) refreshAdminDashboard(); else alert("আইডি বা কানেকশন এরর!");
+            if(!error) refreshAdminDashboard(); else alert("আইডিটি সম্ভবত ইতিমধ্যে ব্যবহৃত!");
         }
 
         async function loadMemberDashboard() {
@@ -210,7 +221,7 @@
             document.getElementById('member-summary-cards').innerHTML = renderCards(inc, exp);
             document.getElementById('member-tx-history').innerHTML = txs?.map(t => `
                 <div class="p-4 flex justify-between">
-                    <span>${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'} (${t.comment || '-'})</span>
+                    <span>${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'} (${t.comment || '-'})</span>
                     <span class="font-bold">৳${Number(t.amount).toLocaleString()}</span>
                 </div>`).join('') || '';
         }
@@ -218,7 +229,7 @@
         function renderCards(inc, exp) {
             return `
                 <div class="bg-white p-6 rounded-2xl border-b-4 border-emerald-500 shadow-sm">
-                    <p class="text-[10px] font-bold opacity-50 uppercase">সঞ্চয়</p>
+                    <p class="text-[10px] font-bold opacity-50 uppercase">সঞ্চয়</p>
                     <h2 class="text-2xl font-black">৳${inc.toLocaleString()}</h2>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border-b-4 border-red-500 shadow-sm">
