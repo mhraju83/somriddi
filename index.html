@@ -170,14 +170,40 @@
             const comment = document.getElementById('tx-comment').value;
 
             if(!mId || isNaN(amt)) return alert("সঠিক ডাটা দিন!");
+
             const { error } = await _db.from('transactions').insert([{ member_id: mId, amount: amt, type, comment }]);
+            
             if(!error) {
+                // ব্যালেন্স আপডেট করা
                 const { data: p } = await _db.from('profiles').select('balance').eq('id', mId).single();
                 let newBal = (type === 'Deposit') ? (Number(p.balance) + amt) : (Number(p.balance) - amt);
                 await _db.from('profiles').update({ balance: newBal }).eq('id', mId);
+                
+                // রিসিট জেনারেট এবং দেখানো
+                showReceipt(mId, amt, type, comment);
+                
                 refreshAdminDashboard();
-                alert("লেনদেন সফল!");
-            } else alert("আইডি খুঁজে পাওয়া যায়নি!");
+                
+                // ইনপুট বক্স খালি করা
+                document.getElementById('tx-member-id').value = '';
+                document.getElementById('tx-amount').value = '';
+                document.getElementById('tx-comment').value = '';
+            } else {
+                alert("আইডি খুঁজে পাওয়া যায়নি বা লেনদেন ব্যর্থ হয়েছে!");
+            }
+        }
+
+        function showReceipt(mId, amt, type, comment) {
+            const details = `
+                <div class="flex justify-between py-2"><span>সদস্য আইডি:</span> <b>${mId}</b></div>
+                <div class="flex justify-between py-2"><span>পরিমাণ:</span> <b class="text-lg">৳${amt.toLocaleString()}</b></div>
+                <div class="flex justify-between py-2"><span>ধরণ:</span> <b>${type === 'Deposit' ? 'সঞ্চয় জমা' : 'উত্তোলন/খরচ'}</b></div>
+                <div class="flex justify-between py-2"><span>মন্তব্য:</span> <b>${comment || 'N/A'}</b></div>
+                <div class="flex justify-between py-2 text-[10px] opacity-50"><span>সময়:</span> ${new Date().toLocaleString('bn-BD')}</div>
+            `;
+            document.getElementById('receipt-details').innerHTML = details;
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        }
         }
 
         async function addNewMember() {
