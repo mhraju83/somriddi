@@ -24,7 +24,7 @@
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <div class="bg-white p-1 rounded-xl shadow-lg">
-                    <img src="https://storage.googleapis.com/static.cdn.respond.io/591024/641041046_877949485299102_1068984859608942574_n-removebg-preview.png" alt="Logo" class="h-12 w-auto">
+                    <img src="https://rjlopdcbqsqzhjkiqmwv.supabase.co/storage/v1/object/public/assets/641041046_877949485299102_1068984859608942574_n.jpg" alt="Logo" class="h-12 w-auto" onerror="this.src='https://placehold.co/100x100?text=LOGO'">
                 </div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-black tracking-tight leading-none uppercase">সম্মিলিত সমৃদ্ধি</h1>
@@ -80,6 +80,7 @@
                 </div>
             </div>
             <div class="bg-white rounded-[2rem] shadow-sm border overflow-hidden">
+                <div class="bg-slate-100 p-4 font-bold text-xs uppercase tracking-widest text-emerald-900">সাম্প্রতিক লেনদেন (আইডি ও নাম সহ)</div>
                 <div id="admin-tx-history" class="divide-y max-h-96 overflow-y-auto"></div>
             </div>
         </main>
@@ -153,12 +154,17 @@
                     <button onclick="deleteMember('${m.id}')" class="text-red-400 p-1"><i class="fas fa-trash"></i></button>
                 </div>`).join('') || '';
 
-            const { data: txs } = await _db.from('transactions').select('*').order('created_at', {ascending: false});
+            // এখানে Profiles টেবিল থেকে নাম নিয়ে আসার জন্য Foreign Key জয়েন ব্যবহার করা হয়েছে
+            const { data: txs } = await _db.from('transactions').select('*, profiles(full_name)').order('created_at', {ascending: false});
+            
             document.getElementById('admin-tx-history').innerHTML = txs?.map(t => `
-                <div class="flex justify-between p-4 text-xs">
-                    <div><b>${t.member_id}</b><p class="opacity-50">${new Date(t.created_at).toLocaleDateString('bn-BD')}</p></div>
+                <div class="flex justify-between p-4 text-xs border-b">
+                    <div>
+                        <b class="text-emerald-900">${t.member_id} | ${t.profiles ? t.profiles.full_name : 'N/A'}</b>
+                        <p class="opacity-50 text-[10px] mt-1 italic">${new Date(t.created_at).toLocaleDateString('bn-BD')} - ${t.comment || 'no comment'}</p>
+                    </div>
                     <div class="font-black ${t.type === 'Deposit' ? 'text-emerald-600' : 'text-red-600'}">৳${Number(t.amount).toLocaleString()}</div>
-                </div>`).join('') || '';
+                </div>`).join('') || '<p class="p-4 text-center opacity-50">কোন লেনদেন নেই</p>';
         }
 
         async function saveTx() {
@@ -169,9 +175,8 @@
 
             if(!mId || isNaN(amt)) return alert("সঠিক ডাটা দিন!");
 
-            // সদস্যের নাম সংগ্রহ করা
             const { data: memberProfile } = await _db.from('profiles').select('full_name').eq('id', mId).single();
-            const memberName = memberProfile ? memberProfile.full_name : "অজানা সদস্য";
+            if(!memberProfile) return alert("এই আইডির কোনো সদস্য পাওয়া যায়নি!");
 
             const { error } = await _db.from('transactions').insert([{ member_id: mId, amount: amt, type, comment }]);
             
@@ -180,14 +185,14 @@
                 let newBal = (type === 'Deposit') ? (Number(p.balance) + amt) : (Number(p.balance) - amt);
                 await _db.from('profiles').update({ balance: newBal }).eq('id', mId);
                 
-                showReceipt(mId, memberName, amt, type, comment);
+                showReceipt(mId, memberProfile.full_name, amt, type, comment);
                 refreshAdminDashboard();
                 
                 document.getElementById('tx-member-id').value = '';
                 document.getElementById('tx-amount').value = '';
                 document.getElementById('tx-comment').value = '';
             } else {
-                alert("আইডি পাওয়া যায়নি বা লেনদেন ব্যর্থ!");
+                alert("লেনদেন সেভ করতে সমস্যা হয়েছে!");
             }
         }
 
@@ -220,10 +225,13 @@
             txs?.forEach(t => { if(t.type === 'Deposit') inc += Number(t.amount); else exp += Number(t.amount); });
             document.getElementById('member-summary-cards').innerHTML = renderCards(inc, exp);
             document.getElementById('member-tx-history').innerHTML = txs?.map(t => `
-                <div class="p-4 flex justify-between">
-                    <span>${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'} (${t.comment || '-'})</span>
+                <div class="p-4 flex justify-between border-b">
+                    <div>
+                        <span class="font-bold">${t.type === 'Deposit' ? 'সঞ্চয়' : 'খরচ'}</span>
+                        <p class="text-[10px] opacity-50 italic">${t.comment || ''}</p>
+                    </div>
                     <span class="font-bold">৳${Number(t.amount).toLocaleString()}</span>
-                </div>`).join('') || '';
+                </div>`).join('') || '<p class="p-4 text-center opacity-50">কোন লেনদেন নেই</p>';
         }
 
         function renderCards(inc, exp) {
